@@ -1,0 +1,9 @@
+/**
+ * Browser-visible RAG evaluation runner. It asks the admin Edge Function to execute seeded
+ * cases through the real ask-supervisor path and persist rag_eval_runs. This is the quality
+ * feedback loop for retrieval, jurisdiction, language, citations, and authority behavior.
+ */
+import {useEffect,useState} from "react";import {supabase} from "../lib/supabase";
+type Run={id:string;query:string;retrieval_pass:boolean;jurisdiction_pass:boolean;citation_pass:boolean;behavior_pass:boolean;overall_pass:boolean;created_at:string};
+/** Renders latest results and starts a hosted run; errors remain actionable in the browser. */
+export function EvaluationsPage(){const [runs,setRuns]=useState<Run[]>([]);const [message,setMessage]=useState("");async function load(){const {data,error}=await supabase.functions.invoke("run-rag-evals",{body:{action:"list"}});if(error)setMessage(error.message);else setRuns(data.runs)}async function run(){setMessage("Running hosted evaluations…");const {data,error}=await supabase.functions.invoke("run-rag-evals",{body:{action:"run_all"}});setMessage(error?error.message:`Completed ${data.completed} cases`);await load()}useEffect(()=>{void load()},[]);return <section className="panel"><h1>RAG Evaluations</h1><button onClick={run}>Run All Evaluations</button>{message&&<p className="warning">{message}</p>}<div className="table-wrap"><table><thead><tr><th>Result</th><th>Query</th><th>Retrieval</th><th>Jurisdiction</th><th>Citations</th><th>Behavior</th></tr></thead><tbody>{runs.map(r=><tr key={r.id}><td>{r.overall_pass?"PASS":"FAIL"}</td><td>{r.query}</td><td>{r.retrieval_pass?"PASS":"FAIL"}</td><td>{r.jurisdiction_pass?"PASS":"FAIL"}</td><td>{r.citation_pass?"PASS":"FAIL"}</td><td>{r.behavior_pass?"PASS":"FAIL"}</td></tr>)}</tbody></table></div></section>}
