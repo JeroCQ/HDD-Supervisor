@@ -1,0 +1,9 @@
+# Edge Functions authenticate explicitly with Supabase Auth; gateway JWT checks remain enabled.
+[functions.ask-supervisor]
+verify_jwt = true
+[functions.kb-admin]
+verify_jwt = true
+[functions.ingest-document]
+verify_jwt = true
+[functions.run-rag-evals]
+verify_jwt = true
